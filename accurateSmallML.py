@@ -17,6 +17,8 @@ from qiskit_machine_learning.algorithms.classifiers import VQC
 from qiskit.primitives import StatevectorSampler as Sampler
 import pandas as pd
 import textfeatures as tf
+import sklearn
+from xgboost import XGBClassifier, XGBRegressor
 
 
 
@@ -38,7 +40,14 @@ def binary_classification_specially_accurate_on_small_samples_for_tabular_datase
     target_column = target_column
     X = data.drop(target_column, axis=1).values
     y = data[target_column].values
-    print(X)
+
+    if len(X)>100:
+        model = XGBClassifier()
+        y_label_encoder = sklearn.preprocessing.LabelEncoder()
+        y_encoded = y_label_encoder.fit_transform(y)
+        model.fit(X, y_encoded)
+        score = model.score(X, y_encoded)
+        return model,score
 
     num_features = X.shape[1]
     indices = np.random.permutation(len(X))
@@ -97,6 +106,14 @@ def binary_classification_specially_accurate_on_small_samples_for_text_dataset(t
     sampler = Sampler()
     num_features = X.shape[1]
     indices = np.random.permutation(len(X))
+    if len(X)>100:
+        model = XGBClassifier()
+        y_label_encoder = sklearn.preprocessing.LabelEncoder()
+        y_encoded = y_label_encoder.fit_transform(y)
+        model.fit(X, y_encoded)
+        score = model.score(X, y_encoded)
+        return model,score
+
     X = X[indices]
     y = y[indices]
 
@@ -130,20 +147,28 @@ def binary_classification_specially_accurate_on_small_samples_for_text_dataset(t
             score += 1
     return vqc,score/l
 
-# if __name__ == "__main__":
-    # file_path='iris.csv'
-    # target_column='species'
-    # to_predict_label = "setosa"
-    # maxiter = 200
-    # model, score = binary_classification_specially_accurate_on_small_samples_for_tabular_dataset(to_predict_label=to_predict_label, file_path=file_path, target_column=target_column, maxiter=maxiter)
-    # print(f"Model Score: {score}")
-    # print(f"Model: {model}")
+if __name__ == "__main__":
+    file_path='irisSmall.csv'
+    target_column='species'
+    to_predict_label = "setosa"
+    maxiter = 200
+    model, score = binary_classification_specially_accurate_on_small_samples_for_tabular_dataset(to_predict_label=to_predict_label, file_path=file_path, target_column=target_column, maxiter=maxiter)
+    print(f"Model Score: {score}")
+    print(f"Model: {model}")
 
-    # file_path='text.csv'
-    # target_column='v1'      
-    # text_column='v2'
-    # to_predict_label = "spam"
-    # maxiter = 200
-    # model, score = binary_classification_specially_accurate_on_small_samples_for_text_dataset(text_column=text_column, to_predict_label=to_predict_label, file_path=file_path, target_column=target_column, maxiter=maxiter)
-    # print(f"Model Score: {score}")
-    # print(f"Model: {model}")
+    file_path='iris.csv'
+    target_column='species'
+    to_predict_label = "setosa"
+    maxiter = 200
+    model, score = binary_classification_specially_accurate_on_small_samples_for_tabular_dataset(to_predict_label=to_predict_label, file_path=file_path, target_column=target_column, maxiter=maxiter)
+    print(f"Model Score: {score}")
+    print(f"Model: {model}")
+
+    file_path='text.csv'
+    target_column='v1'      
+    text_column='v2'
+    to_predict_label = "spam"
+    maxiter = 200
+    model, score = binary_classification_specially_accurate_on_small_samples_for_text_dataset(text_column=text_column, to_predict_label=to_predict_label, file_path=file_path, target_column=target_column, maxiter=maxiter)
+    print(f"Model Score: {score}")
+    print(f"Model: {model}")
